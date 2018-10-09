@@ -21,19 +21,34 @@ public class MyScriptEngine implements ScriptEngine {
 
     @Override
     public <T> T compile(String scriptName, String scriptSource, ScriptContext<T> context, Map<String, String> params) {
-        logger.info("-----2---- use params the scriptName {} ,scriptSource  {}, context {},params {}", scriptName, scriptSource, context.name, params.entrySet());
-        logger.info("SearchScript.CONTEXT: " + SearchScript.CONTEXT);
+        logger.info("-----2---- use params the scriptName={} ,scriptSource={}, context={},params={}", scriptName, scriptSource, context.name, params.entrySet());
+
         if (!context.equals(SearchScript.CONTEXT)) {
             throw new IllegalArgumentException(getType() + " scripts cannot be used for context [" + context.name + "]");
         }
-        final String first = XContentMapValues.nodeStringValue(params.get("first"), null);
-        final String second = XContentMapValues.nodeStringValue(params.get("second"), null);
-        logger.info("this is first value : {} ,second : {} ", first, second);
+
 
         // query script use "source" value with identifier
         if ("demoPlugin".equals(scriptSource)) {
 
             SearchScript.Factory factory = (p, lookup) -> new SearchScript.LeafFactory() {
+                final String first;
+                final String second;
+                {
+                    if (p.containsKey("first") == false) {
+                        first = null;
+                    }else {
+                        first = p.get("first").toString();
+                    }
+                    if (p.containsKey("second") == false) {
+                        second = null;
+                    }else {
+                        second = p.get("second").toString();
+                    }
+
+                    logger.info("this is first value : {} ,second : {} ", first, second);
+                }
+
                 @Override
                 public SearchScript newInstance(LeafReaderContext context) throws IOException {
                     return new SearchScript(p, lookup, context) {
